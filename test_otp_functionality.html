@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OTP Test</title>
+</head>
+<body>
+    <h1>OTP Functionality Test</h1>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" placeholder="Enter your email">
+        <button id="sendEmailOtp">Send Email OTP</button>
+    </div>
+    <div>
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" placeholder="Enter your phone number">
+        <button id="sendPhoneOtp">Send Phone OTP</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('sendEmailOtp').addEventListener('click', function() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+
+            fetch('/otp/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('result').innerHTML = `<p>Success: ${JSON.stringify(data)}</p>`;
+                if (data.dev_otp) {
+                    alert('Development Mode: OTP is ' + data.dev_otp);
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('sendPhoneOtp').addEventListener('click', function() {
+            const phone = document.getElementById('phone').value;
+            if (!phone) {
+                alert('Please enter a phone number');
+                return;
+            }
+
+            fetch('/otp/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ contact_number: phone })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('result').innerHTML = `<p>Success: ${JSON.stringify(data)}</p>`;
+                if (data.dev_otp) {
+                    alert('Development Mode: OTP is ' + data.dev_otp);
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

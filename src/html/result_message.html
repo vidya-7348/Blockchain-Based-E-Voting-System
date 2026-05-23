@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTING SYSTEM - Result</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .message {
+            font-size: 20px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .date {
+            font-weight: 700;
+            color: #4285f4;
+        }
+        
+        .btn-container {
+            margin-top: 30px;
+        }
+        
+        .back-btn {
+            padding: 12px 30px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #3367d6;
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">VOTING SYSTEM</div>
+        <div class="message" id="message">
+            Your vote has been recorded. Please check the result on this date: 
+            <span class="date" id="resultDate">Loading...</span>.
+        </div>
+        <div class="btn-container">
+            <button class="back-btn" onclick="goToHome()">Back to Home</button>
+        </div>
+    </div>
+    
+    <script>
+        // Load result date when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get token from localStorage or URL query parameters
+            let token = localStorage.getItem('token');
+            if (!token) {
+                // Try to get token from URL query parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    // Store in localStorage for future use
+                    localStorage.setItem('token', token);
+                }
+            }
+            
+            // Fetch result date from backend
+            fetch('/api/results', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Format the date
+                const resultDate = new Date(data.resultDate);
+                const formattedDate = resultDate.toLocaleDateString('en-GB');
+                
+                // Update the message
+                document.getElementById('resultDate').textContent = formattedDate;
+            })
+            .catch(error => {
+                console.error('Error fetching result date:', error);
+                document.getElementById('resultDate').textContent = '15/12/2025';
+            });
+        });
+        
+        // Function to go to home page
+        function goToHome() {
+            // Clear token from localStorage
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            window.location.href = '/choose_type.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Result Page</title>
+</head>
+<body>
+    <h1>Test Result Page</h1>
+    <p>This page will redirect to the result page with a valid token.</p>
+    <script>
+        // Set a valid token in localStorage
+        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InZhaXNobmF2aXB1amFyaTQ0NDRAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzY0NDkzNTQ4LjU5NzMzNzV9.sS9MTWX8PSG3PzkYgzWi4tlhSSF8mdahztBKZSLxXsA');
+        
+        // Set voting dates in localStorage
+        localStorage.setItem('votingDates', JSON.stringify({
+            "startDate": "2025-11-29T00:00:00",
+            "endDate": "2025-11-29T00:00:00",
+            "resultDate": "2025-11-30T11:00:00",
+            "resultMessage": "Election results are now available!"
+        }));
+        
+        // Redirect to the result page
+        window.location.href = '/result.html';
+    </script>
+</body>
+</html>

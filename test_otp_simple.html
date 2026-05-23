@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OTP Test</title>
+</head>
+<body>
+    <h1>OTP Test</h1>
+    <button onclick="sendOTP()">Send OTP</button>
+    <div id="result"></div>
+
+    <script>
+        async function sendOTP() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Sending...';
+            
+            try {
+                const response = await fetch('/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: 'test@example.com' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<p style="color: green;">Success! Check console for OTP.</p>`;
+                    if (data.dev_otp) {
+                        console.log('OTP:', data.dev_otp);
+                        resultDiv.innerHTML += `<p>OTP: ${data.dev_otp}</p>`;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.detail || data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

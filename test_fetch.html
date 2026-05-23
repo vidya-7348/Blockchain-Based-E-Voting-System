@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Fetch</title>
+</head>
+<body>
+    <h1>Test OTP Fetch</h1>
+    <button id="testEmail">Test Email OTP</button>
+    <button id="testPhone">Test Phone OTP</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testEmail').addEventListener('click', function() {
+            fetch('/otp/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: 'test@example.com' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = '<p>Error: ' + error + '</p>';
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('testPhone').addEventListener('click', function() {
+            fetch('/otp/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ contact_number: '1234567890' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = '<p>Error: ' + error + '</p>';
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

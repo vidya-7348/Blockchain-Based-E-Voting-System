@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTING SYSTEM - Register</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .validation-message {
+            margin-top: 5px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        
+        .validation-success {
+            color: #28a745;
+        }
+        
+        .validation-error {
+            color: #dc3545;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+        
+        .otp-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .otp-row input {
+            flex: 1;
+        }
+        
+        .otp-row button {
+            padding: 12px 20px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+        
+        .otp-row button:hover {
+            background: #3367d6;
+        }
+        
+        .otp-row button:disabled {
+            background: #cccccc;
+        }
+        
+        #verifyEmailOtpBtn, #verifyPhoneOtpBtn {
+            padding: 12px 15px;
+            background: #28a745;
+            font-size: 14px;
+        }
+        
+        #verifyEmailOtpBtn:hover, #verifyPhoneOtpBtn:hover {
+            background: #218838;
+        }
+        
+        #verifyEmailOtpBtn:disabled, #verifyPhoneOtpBtn:disabled {
+            background: #cccccc;
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 15px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-register:hover {
+            background: #3367d6;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .login-link a {
+            color: #4285f4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .name-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .name-row .form-group {
+            flex: 1;
+        }
+        
+        .dob-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .dob-row .form-group {
+            flex: 1;
+        }
+        
+        .contact-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .contact-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 20px;
+            }
+            
+            .name-row, .dob-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .contact-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .contact-row button {
+                height: auto;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">VOTING SYSTEM</div>
+        <form id="registerForm">
+            <div class="name-row">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" autocomplete="given-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="middleName">Middle Name</label>
+                    <input type="text" id="middleName" name="middleName" autocomplete="additional-name">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" autocomplete="family-name" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email ID</label>
+                <div class="otp-row">
+                    <input type="email" id="email" name="email" autocomplete="email" required>
+                    <button type="button" id="sendEmailOtpBtn">Send Email OTP</button>
+                </div>
+            </div>
+            
+            <div id="emailResult"></div>
+            
+            <div class="form-group">
+                <label for="emailOtp">Email OTP</label>
+                <div class="otp-row">
+                    <input type="text" id="emailOtp" name="emailOtp" required>
+                    <button type="button" id="verifyEmailOtpBtn">Verify</button>
+                </div>
+                <div id="emailOtpValidation" class="validation-message"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="aadhar">Aadhaar Number</label>
+                <input type="text" id="aadhar" name="aadhar" autocomplete="off" required maxlength="12">
+            </div>
+            
+            <div class="form-group">
+                <label for="voterId">Voter ID</label>
+                <input type="text" id="voterId" name="voterId" autocomplete="off" required maxlength="10">
+            </div>
+            
+            <div class="dob-row">
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" autocomplete="bday" required>
+                </div>
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="contact-row">
+                <div class="form-group">
+                    <label for="contactNumber">Contact Number</label>
+                    <input type="tel" id="contactNumber" name="contactNumber" autocomplete="tel" placeholder="+1234567890" required>
+                    <small style="color: #666; font-size: 12px;">Include country code (e.g., +1234567890)</small>
+                </div>
+                <button type="button" id="sendPhoneOtpBtn">Send OTP</button>
+            </div>
+            
+            <div id="phoneResult"></div>
+            
+            <div class="form-group">
+                <label for="phoneOtp">Phone OTP</label>
+                <div class="otp-row">
+                    <input type="text" id="phoneOtp" name="phoneOtp" required>
+                    <button type="button" id="verifyPhoneOtpBtn">Verify</button>
+                </div>
+                <div id="phoneOtpValidation" class="validation-message"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Address</label>
+                <textarea id="address" name="address" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="new-password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" required>
+                <div id="passwordMatchValidation" class="validation-message"></div>
+            </div>
+            
+            <button type="submit" class="btn-register">Register</button>
+        </form>
+        
+        <div class="login-link">
+            Already have an account? <a href="/login.html">Login here</a>
+        </div>
+        <div class="login-link">
+            <a href="/choose_type.html">Back to Role Selection</a>
+        </div>
+    </div>
+    
+    <script>
+        // Restrict Aadhaar input to exactly 12 digits
+        document.getElementById('aadhar').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+        });
+        
+        // Restrict Voter ID input to exactly 10 alphanumeric characters
+        document.getElementById('voterId').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+        });
+        
+        // Validate Email OTP in real-time
+        document.getElementById('emailOtp').addEventListener('input', function() {
+            const emailOtp = this.value;
+            const validationDiv = document.getElementById('emailOtpValidation');
+            
+            // Clear previous validation
+            validationDiv.className = 'validation-message';
+            
+            // Basic validation - OTP should be 6 digits
+            if (emailOtp.length === 0) {
+                validationDiv.textContent = '';
+            } else if (/^\d{6}$/.test(emailOtp)) {
+                validationDiv.textContent = 'Valid OTP format';
+                validationDiv.className = 'validation-message validation-success';
+            } else {
+                validationDiv.textContent = 'OTP should be 6 digits';
+                validationDiv.className = 'validation-message validation-error';
+            }
+        });
+        
+        // Validate Phone OTP in real-time
+        document.getElementById('phoneOtp').addEventListener('input', function() {
+            const phoneOtp = this.value;
+            const validationDiv = document.getElementById('phoneOtpValidation');
+            
+            // Clear previous validation
+            validationDiv.className = 'validation-message';
+            
+            // Basic validation - OTP should be 6 digits
+            if (phoneOtp.length === 0) {
+                validationDiv.textContent = '';
+            } else if (/^\d{6}$/.test(phoneOtp)) {
+                validationDiv.textContent = 'Valid OTP format';
+                validationDiv.className = 'validation-message validation-success';
+            } else {
+                validationDiv.textContent = 'OTP should be 6 digits';
+                validationDiv.className = 'validation-message validation-error';
+            }
+        });
+        
+        // Validate password confirmation in real-time
+        const passwordField = document.getElementById('password');
+        const confirmPasswordField = document.getElementById('confirmPassword');
+        const passwordMatchValidation = document.getElementById('passwordMatchValidation');
+        
+        function checkPasswordMatch() {
+            const password = passwordField.value;
+            const confirmPassword = confirmPasswordField.value;
+            
+            // Clear previous validation
+            passwordMatchValidation.className = 'validation-message';
+            
+            if (confirmPassword.length === 0) {
+                passwordMatchValidation.textContent = '';
+            } else if (password === confirmPassword) {
+                passwordMatchValidation.textContent = 'Passwords match';
+                passwordMatchValidation.className = 'validation-message validation-success';
+            } else {
+                passwordMatchValidation.textContent = 'Passwords do not match';
+                passwordMatchValidation.className = 'validation-message validation-error';
+            }
+        }
+        
+        passwordField.addEventListener('input', checkPasswordMatch);
+        confirmPasswordField.addEventListener('input', checkPasswordMatch);
+        
+        // Verify Email OTP
+        document.getElementById('verifyEmailOtpBtn').addEventListener('click', async function() {
+            const email = document.getElementById('email').value;
+            const emailOtp = document.getElementById('emailOtp').value;
+            const validationDiv = document.getElementById('emailOtpValidation');
+            const verifyBtn = document.getElementById('verifyEmailOtpBtn');
+            
+            if (!email) {
+                validationDiv.textContent = 'Please enter your email address first';
+                validationDiv.className = 'validation-message validation-error';
+                return;
+            }
+            
+            if (!/^\d{6}$/.test(emailOtp)) {
+                validationDiv.textContent = 'Please enter a valid 6-digit OTP';
+                validationDiv.className = 'validation-message validation-error';
+                return;
+            }
+            
+            // Show loading state
+            const originalText = verifyBtn.textContent;
+            verifyBtn.textContent = 'Verifying...';
+            verifyBtn.disabled = true;
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch('/otp/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email, otp: emailOtp }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                
+                if (data.message === 'OTP verified') {
+                    validationDiv.textContent = 'Email OTP verified successfully!';
+                    validationDiv.className = 'validation-message validation-success';
+                    // Disable the verify button and OTP input after successful verification
+                    document.getElementById('emailOtp').disabled = true;
+                    verifyBtn.disabled = true;
+                    verifyBtn.textContent = 'Verified';
+                } else {
+                    validationDiv.textContent = data.detail || 'Invalid OTP. Please try again.';
+                    validationDiv.className = 'validation-message validation-error';
+                    verifyBtn.textContent = originalText;
+                    verifyBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Email OTP Verification Error:', error);
+                validationDiv.textContent = 'Verification failed. Please try again.';
+                validationDiv.className = 'validation-message validation-error';
+                verifyBtn.textContent = originalText;
+                verifyBtn.disabled = false;
+            }
+        });
+        
+        // Verify Phone OTP
+        document.getElementById('verifyPhoneOtpBtn').addEventListener('click', async function() {
+            const phone = document.getElementById('contactNumber').value;
+            const phoneOtp = document.getElementById('phoneOtp').value;
+            const validationDiv = document.getElementById('phoneOtpValidation');
+            const verifyBtn = document.getElementById('verifyPhoneOtpBtn');
+            
+            if (!phone) {
+                validationDiv.textContent = 'Please enter your phone number first';
+                validationDiv.className = 'validation-message validation-error';
+                return;
+            }
+            
+            if (!/^\d{6}$/.test(phoneOtp)) {
+                validationDiv.textContent = 'Please enter a valid 6-digit OTP';
+                validationDiv.className = 'validation-message validation-error';
+                return;
+            }
+            
+            // Show loading state
+            const originalText = verifyBtn.textContent;
+            verifyBtn.textContent = 'Verifying...';
+            verifyBtn.disabled = true;
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch('/otp/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ contact_number: phone, otp: phoneOtp }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                
+                if (data.message === 'OTP verified') {
+                    validationDiv.textContent = 'Phone OTP verified successfully!';
+                    validationDiv.className = 'validation-message validation-success';
+                    // Disable the verify button and OTP input after successful verification
+                    document.getElementById('phoneOtp').disabled = true;
+                    verifyBtn.disabled = true;
+                    verifyBtn.textContent = 'Verified';
+                } else {
+                    validationDiv.textContent = data.detail || 'Invalid OTP. Please try again.';
+                    validationDiv.className = 'validation-message validation-error';
+                    verifyBtn.textContent = originalText;
+                    verifyBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Phone OTP Verification Error:', error);
+                validationDiv.textContent = 'Verification failed. Please try again.';
+                validationDiv.className = 'validation-message validation-error';
+                verifyBtn.textContent = originalText;
+                verifyBtn.disabled = false;
+            }
+        });
+        
+        // Send Email OTP
+        document.getElementById('sendEmailOtpBtn').addEventListener('click', async function() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('emailResult');
+            if (!email) {
+                alert('Please enter your email address');
+                return;
+            }
+            
+            // Show loading message
+            const sendBtn = document.getElementById('sendEmailOtpBtn');
+            const originalText = sendBtn.textContent;
+            sendBtn.textContent = 'Sending...';
+            sendBtn.disabled = true;
+            
+            // Making request to /otp/send
+            try {
+                // Call backend API to send OTP through proxy with timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch('/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                // Email OTP response status: response.status
+                // Email OTP response headers: response.headers
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                // Email OTP response data: data
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">OTP sent to ${email}</div>`;
+                } else {
+                    const errorMessage = data.detail || data.message || 'Unknown error';
+                    resultDiv.innerHTML = `<div class="result error">Failed to send OTP: ${errorMessage}</div>`;
+                }
+            } catch (error) {
+                console.error('Email OTP Error:', error);
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please check if the backend server is running and try again.';
+                } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'Failed to connect to the server. Please make sure both the frontend and backend servers are running.';
+                }
+                resultDiv.innerHTML = `<div class="result error">Failed to send OTP: ${errorMessage}</div>`;
+            } finally {
+                // Always restore button state
+                sendBtn.textContent = originalText;
+                sendBtn.disabled = false;
+            }
+        });
+
+        // Send Phone OTP
+        document.getElementById('sendPhoneOtpBtn').addEventListener('click', async function() {
+            const phone = document.getElementById('contactNumber').value;
+            const resultDiv = document.getElementById('phoneResult');
+            if (!phone) {
+                alert('Please enter your phone number');
+                return;
+            }
+            
+            // Show loading message
+            const sendBtn = document.getElementById('sendPhoneOtpBtn');
+            const originalText = sendBtn.textContent;
+            sendBtn.textContent = 'Sending...';
+            sendBtn.disabled = true;
+            
+            // Making request to /otp/send
+            try {
+                // Call backend API to send OTP through proxy with timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch('/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ contact_number: phone }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                // Phone OTP response status: response.status
+                // Phone OTP response headers: response.headers
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                // Phone OTP response data: data
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">OTP sent to ${phone}</div>`;
+                } else {
+                    const errorMessage = data.detail || data.message || 'Unknown error';
+                    resultDiv.innerHTML = `<div class="result error">Failed to send OTP: ${errorMessage}</div>`;
+                }
+            } catch (error) {
+                console.error('Phone OTP Error:', error);
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please check if the backend server is running and try again.';
+                }
+                resultDiv.innerHTML = `<div class="result error">Failed to send OTP: ${errorMessage}</div>`;
+            } finally {
+                // Always restore button state
+                sendBtn.textContent = originalText;
+                sendBtn.disabled = false;
+            }
+        });
+        
+        // Auto-calculate age when DOB changes
+        document.getElementById('dob').addEventListener('change', function() {
+            const dob = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            
+            document.getElementById('age').value = age;
+        });
+        
+        // Form submission
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const firstName = document.getElementById('firstName').value;
+            const middleName = document.getElementById('middleName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const aadhar = document.getElementById('aadhar').value;
+            const voterId = document.getElementById('voterId').value;
+            const dob = document.getElementById('dob').value;
+            const age = document.getElementById('age').value;
+            const gender = document.getElementById('gender').value;
+            const contactNumber = document.getElementById('contactNumber').value;
+            const address = document.getElementById('address').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const emailOtp = document.getElementById('emailOtp').value;
+            const phoneOtp = document.getElementById('phoneOtp').value;
+            
+            // Validate Aadhaar Number (exactly 12 digits)
+            if (!/^(\d{12})$/.test(aadhar)) {
+                alert('Aadhaar Number must be exactly 12 digits');
+                return;
+            }
+            
+            // Validate Voter ID (exactly 10 alphanumeric characters)
+            if (!/^([a-zA-Z0-9]{10})$/.test(voterId)) {
+                alert('Voter ID must be exactly 10 alphanumeric characters');
+                return;
+            }
+            
+            // Validate Password (8-15 characters with at least one uppercase, one lowercase, and one special character)
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,15}$/;
+            if (!passwordRegex.test(password)) {
+                alert('Password must be 8-15 characters long and contain at least one uppercase letter, one lowercase letter, and one special character');
+                return;
+            }
+            
+            // Verify passwords match
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            // Check if OTPs have been verified
+            const emailOtpVerified = document.getElementById('verifyEmailOtpBtn').textContent === 'Verified';
+            const phoneOtpVerified = document.getElementById('verifyPhoneOtpBtn').textContent === 'Verified';
+            
+            if (!emailOtpVerified) {
+                alert('Please verify your email OTP first');
+                return;
+            }
+            
+            if (!phoneOtpVerified) {
+                alert('Please verify your phone OTP first');
+                return;
+            }
+            
+            try {
+                
+                // Prepare data for registration
+                const formData = {
+                    firstName: firstName,
+                    middleName: middleName,
+                    lastName: lastName,
+                    email: email,
+                    aadhar: aadhar,
+                    voterId: voterId,
+                    dob: dob,
+                    age: age,
+                    gender: gender,
+                    contactNumber: contactNumber,
+                    address: address,
+                    password: password
+                };
+                
+                // Register user with timeout
+                const controller3 = new AbortController();
+                const timeoutId3 = setTimeout(() => controller3.abort(), 10000); // 10 second timeout
+                
+                const registerResponse = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                    signal: controller3.signal
+                });
+                
+                clearTimeout(timeoutId3);
+                
+                if (registerResponse.status === 200) {
+                    const data = await registerResponse.json();
+                    if (data.message === 'Registration successful') {
+                        alert('Registration successful! Redirecting to login page...');
+                        window.location.href = '/login.html';
+                    }
+                } else {
+                    const errorData = await registerResponse.json();
+                    throw new Error(errorData.detail || 'Registration failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please check if the backend server is running and try again.';
+                }
+                alert('Registration failed: ' + errorMessage);
+            }
+        });
+    </script>
+</body>
+</html>

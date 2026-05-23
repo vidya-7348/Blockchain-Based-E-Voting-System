@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Fetch Test</title>
+</head>
+<body>
+    <h1>Debug Fetch Test</h1>
+    <button onclick="testFetch()">Test Fetch</button>
+    <div id="result"></div>
+
+    <script>
+        async function testFetch() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                console.log('Sending request to /otp/send');
+                const response = await fetch('/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: 'test@example.com' })
+                });
+                
+                console.log('Response received:', response);
+                resultDiv.innerHTML = `Status: ${response.status}<br>`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML += `Error: ${response.status} ${response.statusText}`;
+                    try {
+                        const errorText = await response.text();
+                        resultDiv.innerHTML += `<br>Error details: ${errorText}`;
+                    } catch (e) {
+                        resultDiv.innerHTML += `<br>Could not read error details: ${e.message}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML = `Fetch error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

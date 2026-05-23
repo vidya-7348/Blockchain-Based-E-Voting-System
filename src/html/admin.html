@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Voting System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 20px 40px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logout-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #3367d6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: #f0f0f0;
+        }
+        
+        .tab.active {
+            background: #4285f4;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+        
+        .btn-submit {
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background: #3367d6;
+        }
+        
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .candidate-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+        
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .candidate-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .candidate-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .candidate-party {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .delete-btn, .update-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: background 0.3s;
+        }
+        
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #ff2e43;
+        }
+        
+        .update-btn {
+            background: #2ed573;
+            color: white;
+        }
+        
+        .update-btn:hover {
+            background: #26d76d;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .candidates-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Voting System</div>
+        <div class="user-info">
+            <span>Admin Dashboard</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('candidates', event)">Add Candidates</div>
+            <div class="tab" onclick="showTab('users', event)">View Users</div>
+            <div class="tab" onclick="showTab('dates', event)">Voting Dates</div>
+            <div class="tab" onclick="showTab('results', event)">Results</div>
+        </div>
+        
+        <!-- Add Candidates Tab -->
+        <div id="candidates" class="tab-content active">
+            <div class="section-title">Add Candidates</div>
+            <form id="candidateForm">
+                <div class="form-group">
+                    <label for="candidateName">Candidate Name</label>
+                    <input type="text" id="candidateName" name="candidateName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="candidateParty">Party Name</label>
+                    <input type="text" id="candidateParty" name="candidateParty" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="candidatePhoto">Candidate Photo</label>
+                    <input type="file" id="candidatePhoto" name="candidatePhoto" accept="image/*" required>
+                </div>
+                
+                <button type="submit" class="btn-submit">Add Candidate</button>
+            </form>
+            
+        </div>
+        
+        <!-- View Users Tab -->
+        <div id="users" class="tab-content">
+            <div class="section-title">Registered Users</div>
+            <div id="usersList">
+                <!-- Users will be loaded here dynamically -->
+                <p>Loading users...</p>
+            </div>
+        </div>
+        
+        <!-- Voting Dates Tab -->
+        <div id="dates" class="tab-content">
+            <div class="section-title">Voting Dates</div>
+            <form id="datesForm">
+                <div class="form-group">
+                    <label for="startDate">Voting Start Date</label>
+                    <input type="date" id="startDate" name="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endDate">Voting End Date</label>
+                    <input type="date" id="endDate" name="endDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="resultDate">Result Declaration Date</label>
+                    <input type="date" id="resultDate" name="resultDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="resultTime">Declaration Time</label>
+                    <input type="time" id="resultTime" name="resultTime" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="resultMessage">Result Message (shown before declaration date)</label>
+                    <textarea id="resultMessage" name="resultMessage" placeholder="Check the results on {date}" required>Check the results on {date}</textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit">Update Dates</button>
+            </form>
+        </div>
+        
+        <!-- Results Tab -->
+        <div id="results" class="tab-content">
+            <div class="section-title">Election Results</div>
+            <div id="resultsContent">
+                <!-- Results will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Helper function to get token
+        function getAuthToken() {
+            console.log('[ADMIN] Getting auth token...');
+            let token = localStorage.getItem('token');
+            console.log('[ADMIN] Token from localStorage:', token ? `${token.substring(0, 20)}...` : 'NOT FOUND');
+            
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                console.log('[ADMIN] Token from URL params:', authParam ? `${authParam.substring(0, 20)}...` : 'NOT FOUND');
+                
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    console.log('[ADMIN] Storing token in localStorage');
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('role', 'admin');
+                }
+            }
+            
+            console.log('[ADMIN] Returning token:', token ? `${token.substring(0, 20)}...` : 'NONE');
+            return token;
+        }
+        
+        // Function to switch tabs
+        function showTab(tabId, event) {
+            console.log('[ADMIN] Switching to tab:', tabId);
+            
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Load data for the selected tab
+            if (tabId === 'candidates') {
+                console.log('[ADMIN] Showing candidates tab');
+            } else if (tabId === 'users') {
+                console.log('[ADMIN] Showing users tab, loading users...');
+                loadUsers();
+            } else if (tabId === 'dates') {
+                console.log('[ADMIN] Showing dates tab, loading dates...');
+                loadVotingDates();
+            } else if (tabId === 'results') {
+                console.log('[ADMIN] Showing results tab, loading results...');
+                loadResults();
+            }
+        }
+        
+        // Handle candidate form submission
+        document.getElementById('candidateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get token from localStorage or URL query parameters
+            let token = getAuthToken();
+            if (!token) {
+                alert('No authentication token found. Please login again.');
+                window.location.href = '/choose_type.html';
+                return;
+            }
+            
+            // Get form data
+            const name = document.getElementById('candidateName').value;
+            const party = document.getElementById('candidateParty').value;
+            const photoFile = document.getElementById('candidatePhoto').files[0];
+            
+            // Create FormData object to send file
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('party', party);
+            if (photoFile) {
+                formData.append('photo', photoFile);
+            }
+            
+            // Call backend API to add candidate through proxy
+            fetch('/api/candidates', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                body: formData
+            })
+            .then(response => {
+                // First check if the response is ok
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    // Try to parse error response as JSON, but handle case where it's not valid JSON
+                    return response.text().then(text => {
+                        try {
+                            // Try to parse as JSON first
+                            const errorData = JSON.parse(text);
+                            throw new Error(errorData.detail || errorData.message || 'Failed to add candidate');
+                        } catch (parseError) {
+                            // If JSON parsing fails, check if it's a plain text error or HTML
+                            if (text.startsWith('<!DOCTYPE') || text.includes('<html')) {
+                                // It's an HTML error page
+                                throw new Error(`Server error: HTTP ${response.status}`);
+                            } else if (text.trim() === '') {
+                                // Empty response
+                                throw new Error(`Server error: HTTP ${response.status} (${response.statusText})`);
+                            } else {
+                                // Plain text error message
+                                throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+                            }
+                        }
+                    });
+                }
+            })
+            .then(data => {
+                alert('Candidate added successfully!');
+                this.reset();
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to add candidate: ' + error.message);
+            });
+        });
+        
+        document.getElementById('datesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const resultDate = document.getElementById('resultDate').value;
+            const resultTime = document.getElementById('resultTime').value;
+            const resultMessage = document.getElementById('resultMessage').value;
+            
+            // Combine date and time
+            const resultDateTime = new Date(`${resultDate}T${resultTime}`);
+            
+            // Create dates object
+            const datesData = {
+                startDate: startDate,
+                endDate: endDate,
+                resultDate: resultDateTime.toISOString(),
+                resultMessage: resultMessage
+            };
+            
+            // Save to JSON file (in a real implementation, this would be a backend API call)
+            // For now, we'll store in localStorage as a temporary solution
+            localStorage.setItem('votingDates', JSON.stringify(datesData));
+            
+            alert('Voting dates updated successfully!');
+            // Update the UI with the new dates
+            loadVotingDates();
+        });
+        
+        // Function to load voting dates
+        function loadVotingDates() {
+            // Load voting dates from localStorage
+            const datesJson = localStorage.getItem('votingDates');
+            if (datesJson) {
+                try {
+                    const data = JSON.parse(datesJson);
+                    // Populate form fields with existing dates
+                    if (data.startDate) {
+                        document.getElementById('startDate').value = data.startDate;
+                    }
+                    if (data.endDate) {
+                        document.getElementById('endDate').value = data.endDate;
+                    }
+                    if (data.resultDate) {
+                        const resultDate = new Date(data.resultDate);
+                        document.getElementById('resultDate').value = resultDate.toISOString().split('T')[0];
+                        // Set time field
+                        const hours = resultDate.getHours().toString().padStart(2, '0');
+                        const minutes = resultDate.getMinutes().toString().padStart(2, '0');
+                        document.getElementById('resultTime').value = `${hours}:${minutes}`;
+                    }
+                    if (data.resultMessage) {
+                        document.getElementById('resultMessage').value = data.resultMessage;
+                    }
+                } catch (e) {
+                    console.error('Error parsing voting dates:', e);
+                }
+            }
+        }
+        
+        // Function to load users
+        function loadUsers() {
+            console.log('[ADMIN] Loading users...');
+            
+            // Get token using helper function
+            let token = getAuthToken();
+            console.log('[ADMIN] Token retrieved:', token ? `${token.substring(0, 20)}...` : 'NONE');
+            
+            if (!token) {
+                console.error('[ADMIN] No authentication token found');
+                alert('No authentication token found. Please login again.');
+                window.location.href = '/choose_type.html';
+                return;
+            }
+            
+            // Fetch users from backend
+            console.log('[ADMIN] Fetching users from /api/users');
+            fetch('/api/users', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                console.log('[ADMIN] Users API response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(users => {
+                console.log('[ADMIN] Users data received:', users);
+                const container = document.getElementById('usersList');
+                let usersHtml = '<div class="users-table-container">';
+                
+                if (users && users.length > 0) {
+                    usersHtml += `
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Voter ID</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    users.forEach(user => {
+                        usersHtml += `
+                            <tr>
+                                <td>${user.firstName} ${user.lastName}</td>
+                                <td>${user.emailid}</td>
+                                <td>${user.voterId}</td>
+                                <td>${user.has_voted ? 'Voted' : 'Not Voted'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    usersHtml += `
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    usersHtml += '<p>No users registered yet.</p>';
+                }
+                
+                usersHtml += '</div>';
+                container.innerHTML = usersHtml;
+                console.log('[ADMIN] Users displayed successfully');
+            })
+            .catch(error => {
+                console.error('[ADMIN] Error loading users:', error);
+                document.getElementById('usersList').innerHTML = `<p>Error loading users: ${error.message}. Please try again later.</p>`;
+            });
+        }
+        
+        // Function to load results
+        function loadResults() {
+            console.log('[ADMIN] Loading results...');
+            
+            const container = document.getElementById('resultsContent');
+            
+            // Get token using helper function
+            let token = getAuthToken();
+            console.log('[ADMIN] Token retrieved:', token ? `${token.substring(0, 20)}...` : 'NONE');
+            
+            if (!token) {
+                console.error('[ADMIN] No authentication token found');
+                alert('No authentication token found. Please login again.');
+                window.location.href = '/choose_type.html';
+                return;
+            }
+            
+            // Fetch results from backend
+            console.log('[ADMIN] Fetching results from /api/results');
+            fetch('/api/results', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                console.log('[ADMIN] Results API response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('[ADMIN] Results data received:', data);
+                if (data.candidates && data.candidates.length > 0) {
+                    // Sort candidates by vote count (descending)
+                    const sortedCandidates = [...data.candidates].sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+                    
+                    // Find the maximum vote count for percentage calculation
+                    const maxVotes = Math.max(...sortedCandidates.map(c => c.vote_count || 0));
+                    
+                    let candidatesHtml = `
+                        <div style="margin-bottom: 30px;">
+                            <h3 style="text-align: center; margin-bottom: 20px;">Election Results</h3>
+                            <div style="background: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 2px solid #ddd; background: #e9ecef; font-weight: bold;">
+                                    <div style="flex: 2;"><strong>Candidate Name</strong></div>
+                                    <div style="flex: 1;"><strong>Party</strong></div>
+                                    <div style="flex: 1; text-align: center;"><strong>Votes</strong></div>
+                                    <div style="flex: 2; text-align: center;"><strong>Percentage</strong></div>
+                                </div>
+                    `;
+                    
+                    // Calculate total votes for percentage calculation
+                    const totalVotes = sortedCandidates.reduce((sum, candidate) => sum + (candidate.vote_count || 0), 0);
+                    
+                    sortedCandidates.forEach((candidate, index) => {
+                        const isWinner = index === 0 && (candidate.vote_count || 0) > 0;
+                        const votes = candidate.vote_count || 0;
+                        const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0';
+                        const rowStyle = isWinner ? 'font-weight: 700; background: #d4edda; border-left: 4px solid #28a745;' : 'background: white;';
+                        
+                        candidatesHtml += `
+                            <div style="display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; ${rowStyle}">
+                                <div style="flex: 2;">${candidate.name}</div>
+                                <div style="flex: 1;">${candidate.party || 'N/A'}</div>
+                                <div style="flex: 1; text-align: center;">${votes}</div>
+                                <div style="flex: 2; text-align: center;">${percentage}%</div>
+                            </div>
+                        `;
+                    });
+                    
+                    // Add summary statistics
+                    candidatesHtml += `
+                            </div>
+                            <div style="margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 5px;">
+                                <div style="display: flex; justify-content: space-around; text-align: center;">
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: bold;">${totalVotes}</div>
+                                        <div>Total Votes</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: bold;">${sortedCandidates.length}</div>
+                                        <div>Candidates</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.innerHTML = candidatesHtml;
+                    console.log('[ADMIN] Results displayed successfully');
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h3>No Results Available</h3>
+                            <p>No candidates found or no votes have been cast yet.</p>
+                        </div>
+                    `;
+                    console.log('[ADMIN] No results to display');
+                }
+            })
+            .catch(error => {
+                console.error('[ADMIN] Error fetching results:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>Error Loading Results</h3>
+                        <p>Unable to fetch election results. Please try again later.</p>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // Function to logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear token from localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                window.location.href = '/choose_type.html';
+            }
+        }
+        
+        // Form submission handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[ADMIN] DOM loaded, initializing...');
+            // Load initial data
+            loadCandidates();
+            loadVotingDates();
+        });
+    </script>
+</body>
+</html>

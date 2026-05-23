@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Real Email OTP</title>
+</head>
+<body>
+    <h1>Test Real Email OTP</h1>
+    <input type="email" id="email" placeholder="Enter YOUR real email address">
+    <button onclick="sendOtp()">Send OTP to Real Email</button>
+    <div id="result"></div>
+
+    <script>
+        async function sendOtp() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!email || email === 'test@example.com') {
+                resultDiv.innerHTML = '<p style="color: red;">Please enter your REAL email address</p>';
+                return;
+            }
+            
+            try {
+                console.log('Sending OTP to:', email);
+                const response = await fetch('/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await response.json();
+                console.log('Response:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p style="color: green;">✅ Success! Check your email (${email}) for the OTP.<br>Response: ${JSON.stringify(data)}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">❌ Error: ${response.status} - ${JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<p style="color: red;">❌ Network Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

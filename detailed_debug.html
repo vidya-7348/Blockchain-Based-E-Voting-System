@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detailed Debug Test</title>
+</head>
+<body>
+    <h1>Detailed Debug Test</h1>
+    <button onclick="testFetch()">Test Fetch</button>
+    <button onclick="testXHR()">Test XHR</button>
+    <div id="result"></div>
+
+    <script>
+        async function testFetch() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h2>Fetch Test</h2><p>Testing...</p>';
+            
+            try {
+                console.log('=== Fetch Test ===');
+                console.log('Sending request to /otp/send');
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch('/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: 'test@example.com' }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                console.log('Response received:', response);
+                resultDiv.innerHTML += `<p>Status: ${response.status}</p>`;
+                resultDiv.innerHTML += `<p>Status Text: ${response.statusText}</p>`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML += `<p>Error: ${response.status} ${response.statusText}</p>`;
+                    try {
+                        const errorText = await response.text();
+                        resultDiv.innerHTML += `<p>Error details: ${errorText}</p>`;
+                    } catch (e) {
+                        resultDiv.innerHTML += `<p>Could not read error details: ${e.message}</p>`;
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML += `<p style="color: red;">Fetch error: ${error.message}</p>`;
+                if (error.name === 'AbortError') {
+                    resultDiv.innerHTML += `<p style="color: red;">Request timed out</p>`;
+                }
+            }
+        }
+        
+        function testXHR() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h2>XHR Test</h2><p>Testing...</p>';
+            
+            try {
+                console.log('=== XHR Test ===');
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/otp/send', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.timeout = 10000; // 10 second timeout
+                
+                xhr.onload = function() {
+                    console.log('XHR Response received:', xhr);
+                    resultDiv.innerHTML += `<p>Status: ${xhr.status}</p>`;
+                    
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const data = JSON.parse(xhr.responseText);
+                        resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    } else {
+                        resultDiv.innerHTML += `<p>Error: ${xhr.status} ${xhr.statusText}</p>`;
+                        resultDiv.innerHTML += `<p>Error details: ${xhr.responseText}</p>`;
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    console.error('XHR Network error');
+                    resultDiv.innerHTML += `<p style="color: red;">XHR Network error</p>`;
+                };
+                
+                xhr.ontimeout = function() {
+                    console.error('XHR Timeout');
+                    resultDiv.innerHTML += `<p style="color: red;">XHR Timeout</p>`;
+                };
+                
+                xhr.send(JSON.stringify({ email: 'test@example.com' }));
+            } catch (error) {
+                console.error('XHR error:', error);
+                resultDiv.innerHTML += `<p style="color: red;">XHR error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

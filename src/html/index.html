@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Page - E-Voting System</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: #4285f4;
+            color: white;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .candidate-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .vote-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .vote-btn:hover {
+            background: #3367d6;
+        }
+        .vote-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #resultContent {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">E-Voting System</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" id="votingLink" onclick="showSection('voting')">VOTING</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="resultLink" onclick="showSection('result')">RESULT</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="logoutLink" onclick="logout()">Logout</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div id="votingSection" class="section active">
+            <h2>Voting Page</h2>
+            <div id="votingDates">
+                <p><strong>Voting Period:</strong> <span id="votingPeriod"></span></p>
+            </div>
+            <div id="candidatesContainer">
+                <p>Loading candidates...</p>
+            </div>
+        </div>
+
+        <div id="resultSection" class="section">
+            <h2>Election Results</h2>
+            <div id="resultContent">
+                <p>Loading results...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to show section and update navigation
+        function showSection(sectionId) {
+            event.preventDefault();
+            
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            if (sectionId === 'voting') {
+                document.getElementById('votingSection').classList.add('active');
+                document.getElementById('votingLink').classList.add('active');
+                loadCandidates();
+            } else if (sectionId === 'result') {
+                document.getElementById('resultSection').classList.add('active');
+                document.getElementById('resultLink').classList.add('active');
+                loadResults();
+            }
+        }
+        
+        // Function to load candidates
+        function loadCandidates() {
+            let token = localStorage.getItem('token');
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    localStorage.setItem('token', token);
+                }
+            }
+            
+            if (!token) {
+                alert('No authentication token found. Please login again.');
+                window.location.href = '/choose_type.html';
+                return;
+            }
+            
+            const container = document.getElementById('candidatesContainer');
+            container.innerHTML = '<p>Loading candidates...</p>';
+            
+            // First, get voting dates from localStorage to check if we should show the result date message
+            const datesJson = localStorage.getItem('votingDates');
+            let datesData = {};
+            if (datesJson) {
+                try {
+                    datesData = JSON.parse(datesJson);
+                } catch (e) {
+                    console.error('Error parsing voting dates:', e);
+                }
+            }
+            
+            // If we don't have voting dates, try to fetch them first
+            if (!datesData.startDate && !datesData.endDate && !datesData.resultDate) {
+                return fetch('/api/voting-dates', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Store voting dates in localStorage
+                    localStorage.setItem('votingDates', JSON.stringify(data));
+                    // Recursively call loadCandidates with the fetched dates
+                    loadCandidates();
+                })
+                .catch(error => {
+                    console.error('Error loading dates:', error);
+                    // Continue with empty datesData if fetch fails
+                    displayCandidates(container, datesData, token);
+                });
+            } else {
+                // We have dates, proceed to display candidates
+                displayCandidates(container, datesData, token);
+            }
+        }
+        
+        // Helper function to display candidates
+        function displayCandidates(container, datesData, token) {
+            const startDate = datesData.startDate ? new Date(datesData.startDate) : null;
+            const endDate = datesData.endDate ? new Date(datesData.endDate) : null;
+            const resultDate = datesData.resultDate ? new Date(datesData.resultDate) : null;
+            const currentDate = new Date();
+            
+            // Check if we're before the voting period
+            if (startDate && currentDate < startDate) {
+                // Show voting not yet open message
+                const formattedDate = startDate.toLocaleDateString('en-GB');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>Voting Not Yet Open</h3>
+                        <p style="font-size: 18px; margin-top: 20px; color: #4285f4; font-weight: bold;">
+                            Voting will begin on ${formattedDate}.
+                        </p>
+                    </div>
+                `;
+                return Promise.resolve();
+            }
+            
+            // Check if we're after the voting period but before results are announced
+            if (endDate && resultDate && currentDate >= endDate && currentDate < resultDate) {
+                // Show result declaration date message
+                const formattedDate = resultDate.toLocaleDateString('en-GB');
+                let message = datesData.resultMessage || `Results will be announced on ${formattedDate}.`;
+                message = message.replace('{date}', formattedDate);
+                
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>Voting Period Ended</h3>
+                        <p style="font-size: 18px; margin-top: 20px; color: #4285f4; font-weight: bold;">
+                            ${message}
+                        </p>
+                    </div>
+                `;
+                return Promise.resolve();
+            }
+            
+            // If we're in the voting period or after the result date, load candidates normally
+            // Fetch candidates from backend
+            return fetch('/api/candidates', {
+                method: 'GET',
+                headers: token ? {
+                    'Authorization': 'Bearer ' + token
+                } : {}
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load candidates');
+                }
+                return response.json();
+            })
+            .then(candidates => {
+                let html = '';
+                
+                // Check if we're in the voting period (after start date and before end date)
+                const isInVotingPeriod = (!startDate || currentDate >= startDate) && (!endDate || currentDate <= endDate);
+                
+                if (candidates.length === 0) {
+                    html = '<p>No candidates available.</p>';
+                } else {
+                    candidates.forEach(candidate => {
+                        html += `
+                            <div class="candidate-card">
+                                ${candidate.photo ? `<img src="${candidate.photo}" alt="${candidate.name}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:10px;">` : ''}
+                                <h3>${candidate.name}</h3>
+                                <p><strong>Party:</strong> ${candidate.party}</p>
+                                ${candidate.party_logo ? `<img src="${candidate.party_logo}" alt="${candidate.party}" style="width:60px; height:60px; object-fit:cover; margin-top:10px;">` : ''}
+                                ${isInVotingPeriod ? `<button class="vote-btn" onclick="voteForCandidate(${candidate.id})">Vote</button>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+                
+                container.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                container.innerHTML = '<p>Error loading candidates. Please try again.</p>';
+            });
+        }
+        
+        // Function to vote for candidate
+        function voteForCandidate(candidateId) {
+            // Check if already voted
+            let token = localStorage.getItem('token');
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    localStorage.setItem('token', token);
+                }
+            }
+            
+            // Check localStorage for hasVoted flag
+            if (localStorage.getItem('hasVoted') === 'true') {
+                alert('You can only vote once.');
+                return;
+            }
+            
+            fetch('/api/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ candidateId: candidateId })
+            })
+            .then(response => {
+                if (response.status === 400) {
+                    return response.json().then(data => {
+                        throw new Error(data.detail || 'You can only vote once.');
+                    });
+                }
+                if (response.status === 200) {
+                    return response.json();
+                }
+                throw new Error('Voting failed');
+            })
+            .then(data => {
+                // Mark as voted
+                localStorage.setItem('hasVoted', 'true');
+                
+                // Disable all vote buttons
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.disabled = true;
+                    btn.textContent = 'Voted';
+                });
+                
+                alert('Your vote has been recorded successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || 'Failed to cast vote. Please try again.');
+            });
+        }
+        
+        // Function to load results
+        function loadResults() {
+            let token = localStorage.getItem('token');
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    localStorage.setItem('token', token);
+                }
+            }
+            
+            const container = document.getElementById('resultContent');
+            container.innerHTML = '<p>Loading results...</p>';
+            
+            // First, get voting dates from localStorage to check if we should show the result date message
+            const datesJson = localStorage.getItem('votingDates');
+            let datesData = {};
+            if (datesJson) {
+                try {
+                    datesData = JSON.parse(datesJson);
+                } catch (e) {
+                    console.error('Error parsing voting dates:', e);
+                }
+            }
+            
+            // If we don't have voting dates, try to fetch them first
+            if (!datesData.startDate && !datesData.endDate && !datesData.resultDate) {
+                return fetch('/api/voting-dates', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Store voting dates in localStorage
+                    localStorage.setItem('votingDates', JSON.stringify(data));
+                    // Recursively call loadResults with the fetched dates
+                    loadResults();
+                })
+                .catch(error => {
+                    console.error('Error loading dates:', error);
+                    // Continue with empty datesData if fetch fails
+                    displayResults(container, datesData, token);
+                });
+            } else {
+                // We have dates, proceed to display results
+                displayResults(container, datesData, token);
+            }
+        }
+        
+        // Helper function to display results
+        function displayResults(container, datesData, token) {
+            const resultDate = datesData.resultDate ? new Date(datesData.resultDate) : null;
+            const currentDate = new Date();
+            
+            // Debug information
+            console.log('Result date:', resultDate);
+            console.log('Current date:', currentDate);
+            console.log('Comparison result:', resultDate ? currentDate >= resultDate : 'No result date set');
+            
+            // Check if result date has passed (including time)
+            if (resultDate && currentDate >= resultDate) {
+                // Load results normally
+                return fetch('/api/user/results', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                .then(response => {
+                    console.log('Results API response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Results data received:', data);
+                    // Debug: Log the structure of the first candidate
+                    if (data.candidates && data.candidates.length > 0) {
+                        console.log('First candidate structure:', data.candidates[0]);
+                    }
+                    // Check if we have candidates data
+                    if (data.candidates && data.candidates.length > 0) {
+                        // Filter out any candidates with invalid data
+                        const validCandidates = data.candidates.filter(candidate => 
+                            candidate && 
+                            typeof candidate.name === 'string' && 
+                            candidate.name.trim() !== ''
+                        );
+                        
+                        if (validCandidates.length === 0) {
+                            container.innerHTML = `
+                                <div style="text-align: center; padding: 40px;">
+                                    <h3>Election Results</h3>
+                                    <p>No valid candidates found.</p>
+                                </div>
+                            `;
+                            return;
+                        }
+                        
+                        // Sort candidates by vote count (descending)
+                        const sortedCandidates = [...validCandidates].sort((a, b) => {
+                            const aVotes = typeof a.vote_count === 'number' ? a.vote_count : 0;
+                            const bVotes = typeof b.vote_count === 'number' ? b.vote_count : 0;
+                            return bVotes - aVotes;
+                        });
+                        
+                        // Find winner (candidate with most votes)
+                        const winner = sortedCandidates[0];
+                        
+                        // Calculate total votes for percentage calculation
+                        const totalVotes = sortedCandidates.reduce((sum, candidate) => {
+                            const votes = typeof candidate.vote_count === 'number' ? candidate.vote_count : 0;
+                            return sum + votes;
+                        }, 0);
+                        
+                        // Calculate party vote totals
+                        const partyVotes = {};
+                        sortedCandidates.forEach(candidate => {
+                            // Safely get party name
+                            const party = (candidate.party && typeof candidate.party === 'string' && candidate.party.trim() !== '') 
+                                ? candidate.party.trim() 
+                                : 'Independent';
+                            // Safely get vote count
+                            const votes = typeof candidate.vote_count === 'number' ? candidate.vote_count : 0;
+                            if (!partyVotes[party]) {
+                                partyVotes[party] = 0;
+                            }
+                            partyVotes[party] += votes;
+                        });
+                        
+                        // Find party with most votes
+                        let winningParty = '';
+                        let maxPartyVotes = 0;
+                        for (const [party, votes] of Object.entries(partyVotes)) {
+                            if (votes > maxPartyVotes) {
+                                maxPartyVotes = votes;
+                                winningParty = party;
+                            }
+                        }
+                        
+                        // Find the maximum vote count for percentage calculation
+                        const maxVotes = Math.max(...sortedCandidates.map(c => {
+                            return typeof c.vote_count === 'number' ? c.vote_count : 0;
+                        }));
+                        
+                        let resultsHtml = `
+                            <div style="text-align: center; padding: 20px;" class="results-container">
+                                <h2>Election Results</h2>
+                                <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                                    <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 2px solid #ddd; background: #e9ecef; font-weight: bold;">
+                                        <div style="flex: 2; text-align: left;"><strong>Candidate</strong></div>
+                                        <div style="flex: 1;"><strong>Party</strong></div>
+                                        <div style="flex: 1;"><strong>Votes</strong></div>
+                                        <div style="flex: 1;"><strong>%</strong></div>
+                                    </div>
+                        `;
+                        
+                        sortedCandidates.forEach((candidate, index) => {
+                            const isWinner = index === 0 && (typeof candidate.vote_count === 'number' ? candidate.vote_count : 0) > 0;
+                            const votes = typeof candidate.vote_count === 'number' ? candidate.vote_count : 0;
+                            const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0';
+                            const rowStyle = isWinner ? 'font-weight: 700; background: #d4edda; border-left: 4px solid #28a745;' : 'background: white;';
+                            
+                            // Safely get candidate name
+                            const candidateName = (candidate.name && typeof candidate.name === 'string') 
+                                ? candidate.name 
+                                : 'Unknown Candidate';
+                            
+                            // Safely get party name
+                            const partyName = (candidate.party && typeof candidate.party === 'string' && candidate.party.trim() !== '') 
+                                ? candidate.party.trim() 
+                                : 'Independent';
+                            
+                            resultsHtml += `
+                                <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; ${rowStyle}">
+                                    <div style="flex: 2; text-align: left;">${candidateName}${isWinner ? ' 🏆' : ''}</div>
+                                    <div style="flex: 1;">${partyName}</div>
+                                    <div style="flex: 1;">${votes}</div>
+                                    <div style="flex: 1;">${percentage}%</div>
+                                </div>
+                            `;
+                        });
+                        
+                        resultsHtml += `
+                                </div>
+                                <div style="margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 5px;">
+                                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                                        <div>
+                                            <div style="font-size: 24px; font-weight: bold;">${totalVotes}</div>
+                                            <div>Total Votes</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 24px; font-weight: bold;">${sortedCandidates.length}</div>
+                                            <div>Candidates</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${winningParty}</div>
+                                            <div>Winning Party 🏆</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.innerHTML = resultsHtml;
+                        
+                        // Add celebration styles if there's a winner
+                        if ((typeof winner.vote_count === 'number' ? winner.vote_count : 0) > 0) {
+                            const style = document.createElement('style');
+                            style.innerHTML = `
+                                .results-container {
+                                    position: relative;
+                                    overflow: hidden;
+                                    border: 3px solid gold;
+                                    border-radius: 15px;
+                                    background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);
+                                    animation: glow 2s infinite alternate;
+                                }
+                                
+                                @keyframes glow {
+                                    from {
+                                        box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #e60073, 0 0 20px #e60073;
+                                    }
+                                    to {
+                                        box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6;
+                                    }
+                                }
+                                
+                                .confetti-container {
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    width: 100%;
+                                    height: 100%;
+                                    pointer-events: none;
+                                    z-index: 10;
+                                }
+                                
+                                .confetti {
+                                    position: absolute;
+                                    width: 10px;
+                                    height: 10px;
+                                    background-color: #f00;
+                                    opacity: 0;
+                                    animation: fall 5s linear infinite;
+                                }
+                                
+                                .confetti:nth-child(1) { left: 10%; background-color: #ff0000; animation-delay: 0s; }
+                                .confetti:nth-child(2) { left: 20%; background-color: #00ff00; animation-delay: 1s; }
+                                .confetti:nth-child(3) { left: 30%; background-color: #0000ff; animation-delay: 2s; }
+                                .confetti:nth-child(4) { left: 40%; background-color: #ffff00; animation-delay: 3s; }
+                                .confetti:nth-child(5) { left: 50%; background-color: #ff00ff; animation-delay: 4s; }
+                                .confetti:nth-child(6) { left: 60%; background-color: #00ffff; animation-delay: 0.5s; }
+                                .confetti:nth-child(7) { left: 70%; background-color: #ff9900; animation-delay: 1.5s; }
+                                .confetti:nth-child(8) { left: 80%; background-color: #6600cc; animation-delay: 2.5s; }
+                                .confetti:nth-child(9) { left: 90%; background-color: #ff3399; animation-delay: 3.5s; }
+                                .confetti:nth-child(10) { left: 15%; background-color: #33cc33; animation-delay: 4.5s; }
+                                
+                                @keyframes fall {
+                                    0% {
+                                        top: -10%;
+                                        opacity: 1;
+                                        transform: translateX(0) rotate(0deg);
+                                    }
+                                    100% {
+                                        top: 100%;
+                                        opacity: 0;
+                                        transform: translateX(100px) rotate(360deg);
+                                    }
+                                }
+                            `;
+                            document.head.appendChild(style);
+                            
+                            // Add confetti effect
+                            const confettiContainer = document.createElement('div');
+                            confettiContainer.className = 'confetti-container';
+                            for (let i = 0; i < 10; i++) {
+                                const confetti = document.createElement('div');
+                                confetti.className = 'confetti';
+                                confettiContainer.appendChild(confetti);
+                            }
+                            document.querySelector('.results-container').appendChild(confettiContainer);
+                        }
+                    } else {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <h3>Election Results</h3>
+                                <p>No candidates found or no votes have been cast yet.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // If it's a 404 error, show a friendly message
+                    if (error.message.includes('404')) {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <h3>Election Results</h3>
+                                <p style="font-size: 18px; margin-top: 20px; color: #4285f4; font-weight: bold;">
+                                    The election results are being processed. Please check back shortly.
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = `<p>Error loading results: ${error.message}. Please try again.</p>`;
+                    }
+                });
+            } else {
+                // Show result declaration date message
+                const formattedDate = resultDate ? resultDate.toLocaleDateString('en-GB') : 'TBA';
+                const formattedTime = resultDate ? resultDate.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'}) : '';
+                let message = datesData.resultMessage || `Results will be announced on ${formattedDate}.`;
+                message = message.replace('{date}', `${formattedDate}${formattedTime ? ' @ ' + formattedTime : ''}`);
+                
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>Results Not Yet Declared</h3>
+                        <p style="font-size: 18px; margin-top: 20px; color: #4285f4; font-weight: bold;">
+                            ${message}
+                        </p>
+                    </div>
+                `;
+                return Promise.resolve();
+            }
+        }
+        
+        // Function to logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                localStorage.removeItem('hasVoted');
+                window.location.href = '/choose_type.html';
+            }
+        }
+        
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load voting dates
+            let token = localStorage.getItem('token');
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    localStorage.setItem('token', token);
+                }
+            }
+            
+            if (token) {
+                fetch('/api/voting-dates', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.startDate && data.endDate) {
+                        const start = new Date(data.startDate);
+                        const end = new Date(data.endDate);
+                        document.getElementById('votingPeriod').textContent = 
+                            `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+                    }
+                    // Store voting dates in localStorage for use in loadCandidates
+                    localStorage.setItem('votingDates', JSON.stringify(data));
+                    // Load candidates after voting dates are stored
+                    loadCandidates();
+                })
+                .catch(error => {
+                    console.error('Error loading dates:', error);
+                    // Still try to load candidates even if dates fail to load
+                    loadCandidates();
+                });
+            } else {
+                // If no token, redirect to login
+                window.location.href = '/choose_type.html';
+            }
+        });
+    </script>
+</body>
+</html>

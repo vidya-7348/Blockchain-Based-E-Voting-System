@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Debug Admin Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Detailed Debug Admin Dashboard</h1>
+    
+    <div class="debug-section">
+        <h2>Step 1: Check Token Storage</h2>
+        <button onclick="checkToken()">Check Token in localStorage</button>
+        <div id="token-result"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Step 2: Test Login (if no token found)</h2>
+        <button onclick="performLogin()">Perform Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Step 3: Test Users API</h2>
+        <button onclick="testUsersAPI()">Test /api/users Endpoint</button>
+        <div id="users-result"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Step 4: Test Results API</h2>
+        <button onclick="testResultsAPI()">Test /api/results Endpoint</button>
+        <div id="results-result"></div>
+    </div>
+
+    <script>
+        // Helper function to get token
+        function getAuthToken() {
+            let token = localStorage.getItem('token');
+            console.log('[DEBUG] Token from localStorage:', token);
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                console.log('[DEBUG] Token from URL params:', authParam);
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('role', 'admin');
+                }
+            }
+            return token;
+        }
+        
+        function displayResult(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = isError ? 'error' : 'success';
+        }
+        
+        function checkToken() {
+            const token = getAuthToken();
+            const resultElement = document.getElementById('token-result');
+            
+            if (token) {
+                displayResult('token-result', `
+                    <p><strong>✅ Token found!</strong></p>
+                    <p>Token length: ${token.length} characters</p>
+                    <details>
+                        <summary>Click to view token (be careful!)</summary>
+                        <pre>${token}</pre>
+                    </details>
+                `);
+            } else {
+                displayResult('token-result', `
+                    <p><strong>❌ No token found in localStorage</strong></p>
+                    <p>You need to log in first or the token wasn't stored properly.</p>
+                `, true);
+            }
+        }
+        
+        function performLogin() {
+            const email = prompt('Enter admin email:', 'vaishnavipujari4444@gmail.com');
+            const password = prompt('Enter admin password:', 'Admin@123');
+            
+            if (!email || !password) {
+                displayResult('login-result', '<p>Login cancelled</p>', true);
+                return;
+            }
+            
+            displayResult('login-result', '<p>Logging in...</p>');
+            
+            // Perform login
+            fetch('/login', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                params: {
+                    email: email,
+                    password: password
+                }
+            })
+            .then(response => {
+                console.log('[DEBUG] Login response status:', response.status);
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            })
+            .then(data => {
+                console.log('[DEBUG] Login response data:', data);
+                if (data.success && data.token) {
+                    // Store token
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('role', data.role || 'admin');
+                    
+                    displayResult('login-result', `
+                        <p><strong>✅ Login successful!</strong></p>
+                        <p>Token stored in localStorage</p>
+                        <p>Role: ${data.role}</p>
+                        <button onclick="checkToken()">Verify Token Storage</button>
+                    `);
+                } else {
+                    displayResult('login-result', `
+                        <p><strong>❌ Login failed</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `, true);
+                }
+            })
+            .catch(error => {
+                console.error('[DEBUG] Login error:', error);
+                displayResult('login-result', `
+                    <p><strong>❌ Login error:</strong></p>
+                    <p>${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `, true);
+            });
+        }
+        
+        function testUsersAPI() {
+            const token = getAuthToken();
+            
+            if (!token) {
+                displayResult('users-result', `
+                    <p><strong>❌ No token found</strong></p>
+                    <p>Please log in first or check token storage.</p>
+                `, true);
+                return;
+            }
+            
+            displayResult('users-result', '<p>Fetching users...</p>');
+            
+            // Fetch users from backend
+            fetch('/api/users', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                console.log('[DEBUG] Users API response status:', response.status);
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            })
+            .then(users => {
+                console.log('[DEBUG] Users API response data:', users);
+                if (Array.isArray(users) && users.length > 0) {
+                    let html = `
+                        <p><strong>✅ Successfully fetched ${users.length} users</strong></p>
+                        <table border="1" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Voter ID</th>
+                                    <th>Voted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    users.forEach(user => {
+                        html += `
+                            <tr>
+                                <td>${user.firstName} ${user.lastName}</td>
+                                <td>${user.emailid}</td>
+                                <td>${user.voterId}</td>
+                                <td>${user.has_voted ? '✅ Yes' : '❌ No'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    displayResult('users-result', html);
+                } else {
+                    displayResult('users-result', `
+                        <p><strong>⚠️ No users found</strong></p>
+                        <pre>${JSON.stringify(users, null, 2)}</pre>
+                    `);
+                }
+            })
+            .catch(error => {
+                console.error('[DEBUG] Users API error:', error);
+                displayResult('users-result', `
+                    <p><strong>❌ Users API error:</strong></p>
+                    <p>${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `, true);
+            });
+        }
+        
+        function testResultsAPI() {
+            const token = getAuthToken();
+            
+            if (!token) {
+                displayResult('results-result', `
+                    <p><strong>❌ No token found</strong></p>
+                    <p>Please log in first or check token storage.</p>
+                `, true);
+                return;
+            }
+            
+            displayResult('results-result', '<p>Fetching results...</p>');
+            
+            // Fetch results from backend
+            fetch('/api/results', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                console.log('[DEBUG] Results API response status:', response.status);
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            })
+            .then(data => {
+                console.log('[DEBUG] Results API response data:', data);
+                if (data.candidates && Array.isArray(data.candidates) && data.candidates.length > 0) {
+                    let html = `
+                        <p><strong>✅ Successfully fetched ${data.candidates.length} candidates</strong></p>
+                        <table border="1" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Party</th>
+                                    <th>Votes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    // Sort by vote count descending
+                    const sortedCandidates = [...data.candidates].sort((a, b) => b.vote_count - a.vote_count);
+                    
+                    sortedCandidates.forEach(candidate => {
+                        html += `
+                            <tr>
+                                <td>${candidate.name}</td>
+                                <td>${candidate.party || 'N/A'}</td>
+                                <td>${candidate.vote_count}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    displayResult('results-result', html);
+                } else {
+                    displayResult('results-result', `
+                        <p><strong>⚠️ No candidates found</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `);
+                }
+            })
+            .catch(error => {
+                console.error('[DEBUG] Results API error:', error);
+                displayResult('results-result', `
+                    <p><strong>❌ Results API error:</strong></p>
+                    <p>${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `, true);
+            });
+        }
+        
+        // Auto-check token on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('[DEBUG] Page loaded, checking for token...');
+            checkToken();
+        });
+    </script>
+</body>
+</html>

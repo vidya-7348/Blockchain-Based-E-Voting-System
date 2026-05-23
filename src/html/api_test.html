@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button onclick="testUsersAPI()">Test Users API</button>
+    <button onclick="testResultsAPI()">Test Results API</button>
+    <div id="output"></div>
+
+    <script>
+        function testUsersAPI() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing /api/users endpoint...</p>';
+            
+            fetch('http://localhost:8000/api/users', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer test-token'
+                }
+            })
+            .then(response => {
+                output.innerHTML += `<p>Status: ${response.status}</p>`;
+                return response.text();
+            })
+            .then(data => {
+                output.innerHTML += `<pre>${data}</pre>`;
+            })
+            .catch(error => {
+                output.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            });
+        }
+        
+        function testResultsAPI() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing /api/results endpoint...</p>';
+            
+            fetch('http://localhost:8000/api/results', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer test-token'
+                }
+            })
+            .then(response => {
+                output.innerHTML += `<p>Status: ${response.status}</p>`;
+                return response.text();
+            })
+            .then(data => {
+                output.innerHTML += `<pre>${data}</pre>`;
+            })
+            .catch(error => {
+                output.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            });
+        }
+    </script>
+</body>
+</html>

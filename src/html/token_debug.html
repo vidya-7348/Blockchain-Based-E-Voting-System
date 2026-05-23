@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Token Debug</title>
+</head>
+<body>
+    <h1>Token Debug</h1>
+    <button onclick="checkAllTokens()">Check All Token Sources</button>
+    <button onclick="clearTokens()">Clear All Tokens</button>
+    <div id="output"></div>
+
+    <script>
+        function checkAllTokens() {
+            let output = '<h2>Token Sources:</h2>';
+            
+            // Check localStorage
+            const localStorageToken = localStorage.getItem('token');
+            output += `<p><strong>localStorage.token:</strong> ${localStorageToken ? `${localStorageToken.substring(0, 20)}... (${localStorageToken.length} chars)` : 'NOT FOUND'}</p>`;
+            
+            // Check sessionStorage
+            const sessionStorageToken = sessionStorage.getItem('token');
+            output += `<p><strong>sessionStorage.token:</strong> ${sessionStorageToken ? `${sessionStorageToken.substring(0, 20)}... (${sessionStorageToken.length} chars)` : 'NOT FOUND'}</p>`;
+            
+            // Check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = urlParams.get('Authorization');
+            output += `<p><strong>URL Authorization param:</strong> ${urlToken ? `${urlToken.substring(0, 20)}... (${urlToken.length} chars)` : 'NOT FOUND'}</p>`;
+            
+            // Check all localStorage items
+            output += '<h3>All localStorage items:</h3><ul>';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                output += `<li><strong>${key}:</strong> ${value.substring(0, 50)}${value.length > 50 ? '...' : ''} (${value.length} chars)</li>`;
+            }
+            output += '</ul>';
+            
+            // Check all sessionStorage items
+            output += '<h3>All sessionStorage items:</h3><ul>';
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                const value = sessionStorage.getItem(key);
+                output += `<li><strong>${key}:</strong> ${value.substring(0, 50)}${value.length > 50 ? '...' : ''} (${value.length} chars)</li>`;
+            }
+            output += '</ul>';
+            
+            document.getElementById('output').innerHTML = output;
+        }
+        
+        function clearTokens() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            localStorage.removeItem('role');
+            sessionStorage.removeItem('role');
+            document.getElementById('output').innerHTML = '<p><strong>✅ All tokens cleared</strong></p>';
+        }
+        
+        // Run on page load
+        window.addEventListener('DOMContentLoaded', checkAllTokens);
+    </script>
+</body>
+</html>

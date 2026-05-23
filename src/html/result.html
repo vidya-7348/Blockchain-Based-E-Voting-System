@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTING SYSTEM - Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 20px 40px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logout-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #3367d6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .result-message {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        
+        .date {
+            font-weight: 700;
+            color: #4285f4;
+        }
+        
+        .results-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            display: none;
+        }
+        
+        .results-container.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .results-table th {
+            background: #4285f4;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .winner-row {
+            background: #e8f0fe !important;
+            font-weight: 700;
+        }
+        
+        .winner-badge {
+            background: #34a853;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* Winner Display Styles */
+        .winner-display {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        
+        .winner-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            display: block;
+        }
+        
+        .party-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin: 10px auto;
+            display: block;
+        }
+        
+        .winner-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .winner-party {
+            font-size: 18px;
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        .winner-votes {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4285f4;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .results-table {
+                font-size: 14px;
+            }
+            
+            .results-table th,
+            .results-table td {
+                padding: 10px 8px;
+            }
+            
+            .winner-photo {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .party-logo {
+                width: 60px;
+                height: 60px;
+            }
+        }
+        
+        /* Celebration effects */
+        .celebration {
+            position: relative;
+            overflow: hidden;
+            border: 3px solid gold;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #e60073, 0 0 20px #e60073;
+            }
+            to {
+                box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6;
+            }
+        }
+        
+        .confetti-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            animation: fall 5s linear infinite;
+        }
+        
+        .confetti:nth-child(1) { left: 10%; background-color: #ff0000; animation-delay: 0s; }
+        .confetti:nth-child(2) { left: 20%; background-color: #00ff00; animation-delay: 1s; }
+        .confetti:nth-child(3) { left: 30%; background-color: #0000ff; animation-delay: 2s; }
+        .confetti:nth-child(4) { left: 40%; background-color: #ffff00; animation-delay: 3s; }
+        .confetti:nth-child(5) { left: 50%; background-color: #ff00ff; animation-delay: 4s; }
+        .confetti:nth-child(6) { left: 60%; background-color: #00ffff; animation-delay: 0.5s; }
+        .confetti:nth-child(7) { left: 70%; background-color: #ff9900; animation-delay: 1.5s; }
+        .confetti:nth-child(8) { left: 80%; background-color: #6600cc; animation-delay: 2.5s; }
+        .confetti:nth-child(9) { left: 90%; background-color: #ff3399; animation-delay: 3.5s; }
+        .confetti:nth-child(10) { left: 15%; background-color: #33cc33; animation-delay: 4.5s; }
+        
+        @keyframes fall {
+            0% {
+                top: -10%;
+                opacity: 1;
+                transform: translateX(0) rotate(0deg);
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+                transform: translateX(100px) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">VOTING SYSTEM</div>
+        <div class="user-info">
+            <span>Welcome, <span id="userName">User</span></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="page-title">Election Results</div>
+        
+        <div class="result-message" id="resultMessage">
+            Please check the result on this date: <span class="date" id="resultDate">15/12/2025</span>.
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <div class="section-title">Final Results</div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Candidate</th>
+                        <th>Party</th>
+                        <th>Votes</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                    <!-- Results will be loaded here dynamically -->
+                </tbody>
+            </table>
+            
+            <div class="winner-display" id="winnerDisplay">
+                <!-- Winner information will be displayed here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check if results should be displayed
+        function checkResults() {
+            // Get token from localStorage or URL query parameters
+            let token = localStorage.getItem('token');
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    localStorage.setItem('token', token);
+                }
+            }
+            
+            // Fetch results from backend
+            // First, get voting dates from localStorage to check if we should show the result date message
+            const datesJson = localStorage.getItem('votingDates');
+            let datesData = {};
+            if (datesJson) {
+                try {
+                    datesData = JSON.parse(datesJson);
+                } catch (e) {
+                    console.error('Error parsing voting dates:', e);
+                }
+            }
+            
+            const resultDate = datesData.resultDate ? new Date(datesData.resultDate) : null;
+            const currentDate = new Date();
+            
+            // Debug information
+            console.log('Result date:', resultDate);
+            console.log('Current date:', currentDate);
+            console.log('Comparison result:', resultDate ? currentDate >= resultDate : 'No result date set');
+            
+            const messageElement = document.getElementById('resultMessage');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Check if result date has passed (including time)
+            // Allow results to be displayed if resultDate is today or in the past
+            if (resultDate && currentDate >= resultDate) {
+                // Show results - only on the exact date or later
+                messageElement.style.display = 'none';
+                resultsContainer.classList.add('active');
+                
+                // Fetch results from backend
+                return fetch('/api/user/results', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                .then(response => {
+                    console.log('Results API response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Results data received:', data);
+                    // Display results table
+                    if (data.candidates && data.candidates.length > 0) {
+                        displayResultsTable(data.candidates);
+                    } else {
+                        // Handle case where no candidates exist
+                        const tableBody = document.getElementById('resultsTableBody');
+                        tableBody.innerHTML = '<tr><td colspan="4">No candidates found.</td></tr>';
+                    }
+                    
+                    // Display winner information
+                    if (data.winner) {
+                        displayWinner(data.winner);
+                        // Add celebration animation
+                        addCelebrationEffects();
+                    } else {
+                        // Find winner from candidates if not provided
+                        if (data.candidates && data.candidates.length > 0) {
+                            const winner = data.candidates.reduce((prev, current) => {
+                                return (prev.vote_count || 0) > (current.vote_count || 0) ? prev : current;
+                            });
+                            displayWinner(winner);
+                            // Add celebration animation
+                            addCelebrationEffects();
+                        } else {
+                            // No winner found
+                            const winnerDisplay = document.getElementById('winnerDisplay');
+                            winnerDisplay.innerHTML = '<h3>No winner declared yet.</h3>';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching results:', error);
+                    // If the date has passed, we should show the results container even if there's an error
+                    // But we'll display an appropriate error message
+                    messageElement.style.display = 'none';
+                    resultsContainer.classList.add('active');
+                    
+                    // Show error in the results table
+                    const tableBody = document.getElementById('resultsTableBody');
+                    tableBody.innerHTML = '<tr><td colspan="4">Error loading results. Please try again later.</td></tr>';
+                    
+                    // Show error in winner display
+                    const winnerDisplay = document.getElementById('winnerDisplay');
+                    winnerDisplay.innerHTML = '<h3>Error loading winner information.</h3>';
+                });
+            } else {
+                // Show message with actual result date - results not yet declared
+                messageElement.style.display = 'block';
+                resultsContainer.classList.remove('active');
+                
+                const formattedDate = resultDate ? resultDate.toLocaleDateString('en-GB') : 'TBA';
+                const formattedTime = resultDate ? resultDate.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'}) : '';
+                let message = datesData.resultMessage || `Please check the result on this date: {date}`;
+                message = message.replace('{date}', `${formattedDate} @ ${formattedTime}`);
+                document.getElementById('resultDate').textContent = `${formattedDate} @ ${formattedTime}`;
+                messageElement.innerHTML = `
+                    <p style="font-size: 18px; margin-top: 20px; color: #4285f4; font-weight: bold;">
+                        ${message}
+                    </p>
+                `;
+                return Promise.resolve();
+            }
+        }
+        
+        // Function to display results table
+        function displayResultsTable(candidates) {
+            const tableBody = document.getElementById('resultsTableBody');
+            let html = '';
+            
+            // Sort candidates by vote count (descending)
+            candidates.sort((a, b) => b.vote_count - a.vote_count);
+            
+            candidates.forEach((candidate, index) => {
+                const isWinner = index === 0;
+                html += `
+                    <tr ${isWinner ? 'class="winner-row"' : ''}>
+                        <td>
+                            ${candidate.photo ? `<img src="${candidate.photo}" alt="${candidate.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 10px;">` : ''}
+                            ${candidate.name}
+                        </td>
+                        <td>
+                            ${candidate.party}
+                        </td>
+                        <td>${candidate.vote_count}</td>
+                        <td>${isWinner ? '<span class="winner-badge">Winner</span>' : ''}</td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Function to display winner information
+        function displayWinner(winner) {
+            const winnerDisplay = document.getElementById('winnerDisplay');
+            
+            let winnerHtml = `
+                <h3>Congratulations to the Winner!</h3>
+            `;
+            
+            if (winner.photo) {
+                winnerHtml += `<img src="${winner.photo}" alt="${winner.name}" class="winner-photo">`;
+            }
+            
+            winnerHtml += `
+                <div class="winner-name">${winner.name}</div>
+                <div class="winner-party">${winner.party || 'N/A'}</div>
+            `;
+            
+            if (winner.party_logo) {
+                winnerHtml += `<img src="${winner.party_logo}" alt="${winner.party}" class="party-logo">`;
+            }
+            
+            winnerHtml += `
+                <div class="winner-votes">${winner.vote_count || 0} votes</div>
+            `;
+            
+            winnerDisplay.innerHTML = winnerHtml;
+        }
+        
+        // Function to add celebration effects
+        function addCelebrationEffects() {
+            const winnerDisplay = document.getElementById('winnerDisplay');
+            
+            // Add confetti effect
+            winnerDisplay.innerHTML += `
+                <div class="confetti-container">
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                    <div class="confetti"></div>
+                </div>
+            `;
+            
+            // Add animation class to winner display
+            winnerDisplay.classList.add('celebration');
+        }
+        
+        // Function to logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear token from localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                localStorage.removeItem('hasVoted');
+                window.location.href = '/choose_type.html';
+            }
+        }
+        
+        // Check results when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load user info
+            const token = localStorage.getItem('token');
+            if (token) {
+                // In a real implementation, you would fetch user info from the backend
+                // For now, we'll just show a generic user name
+                document.getElementById('userName').textContent = 'User';
+            }
+            
+            checkResults();
+        });
+    </script>
+</body>
+</html>

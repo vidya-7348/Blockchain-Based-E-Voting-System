@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin Dashboard</title>
+</head>
+<body>
+    <h1>Debug Admin Dashboard</h1>
+    <button onclick="testUsersEndpoint()">Test Users Endpoint</button>
+    <div id="result"></div>
+
+    <script>
+        // Helper function to get token
+        function getAuthToken() {
+            let token = localStorage.getItem('token');
+            console.log('Token from localStorage:', token);
+            if (!token) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authParam = urlParams.get('Authorization');
+                console.log('Token from URL params:', authParam);
+                if (authParam && authParam.startsWith('Bearer ')) {
+                    token = authParam.substring(7);
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('role', 'admin');
+                }
+            }
+            return token;
+        }
+
+        function testUsersEndpoint() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            // Get token
+            let token = getAuthToken();
+            console.log('Using token:', token);
+            
+            if (!token) {
+                resultDiv.innerHTML = '<p>No authentication token found.</p>';
+                return;
+            }
+            
+            // Fetch users from backend
+            fetch('/api/users', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(users => {
+                console.log('Users data:', users);
+                resultDiv.innerHTML = `
+                    <h2>Users Data:</h2>
+                    <pre>${JSON.stringify(users, null, 2)}</pre>
+                    <p>Number of users: ${users.length}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTING SYSTEM - Admin Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+        
+        .otp-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .otp-row input {
+            flex: 1;
+        }
+        
+        .otp-row button {
+            height: 46px;
+            padding: 0 20px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .otp-row button:hover {
+            background: #3367d6;
+        }
+        
+        .remember-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .remember-row input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .btn-signin {
+            width: 100%;
+            padding: 15px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .btn-signin:hover {
+            background: #3367d6;
+        }
+        
+        .links {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .links a {
+            color: #4285f4;
+            text-decoration: none;
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 20px;
+            }
+            
+            .otp-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .otp-row button {
+                height: auto;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">VOTING SYSTEM</div>
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" autocomplete="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="otp">Email OTP</label>
+                <div class="otp-row">
+                    <input type="text" id="otp" name="otp" autocomplete="one-time-code" required>
+                    <button type="button" id="sendOtpBtn">Send OTP</button>
+                    <button type="button" id="verifyOtpBtn">Verify</button>
+                </div>
+                <div id="otpValidation" style="margin-top: 10px; font-size: 14px;"></div>
+            </div>
+            
+            <div class="remember-row">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Remember me</label>
+            </div>
+            
+            <button type="submit" class="btn-signin">SIGN IN</button>
+        </form>
+        
+        <div class="links">
+            <a href="/choose_type.html">Back to Role Selection</a>
+        </div>
+    </div>
+    
+    <script>
+        // Send OTP with improved error handling
+        document.getElementById('sendOtpBtn').addEventListener('click', function() {
+            // Clear previous validation when sending new OTP
+            document.getElementById('otpValidation').innerHTML = '';
+            document.getElementById('verifyOtpBtn').style.backgroundColor = '#4285f4';
+            document.getElementById('verifyOtpBtn').textContent = 'Verify';
+            document.getElementById('verifyOtpBtn').disabled = false;
+            const email = document.getElementById('email').value;
+            const validationDiv = document.getElementById('otpValidation');
+                    
+            if (!email) {
+                alert('Please enter your email address');
+                return;
+            }
+                    
+            // Show loading message
+            const sendBtn = document.getElementById('sendOtpBtn');
+            const originalText = sendBtn.textContent;
+            sendBtn.textContent = 'Sending...';
+            sendBtn.disabled = true;
+            validationDiv.innerHTML = '<span style="color: orange;">Sending OTP...</span>';
+                    
+            // Add timeout configuration
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+                    
+            // Call backend API to send OTP
+            fetch('/otp/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email }),
+                signal: controller.signal // Add timeout signal
+            })
+            .then(response => {
+                clearTimeout(timeoutId); // Clear timeout on response
+                console.log('Received response:', response);
+                if (!response.ok) {
+                    console.error('Response not ok:', response.status, response.statusText);
+                    return response.text().then(text => {
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Parsed data:', data);
+                if (data.success) {
+                    validationDiv.innerHTML = '<span style="color: green;">OTP sent successfully! Check your email.</span>';
+                    // No OTP display for security in production mode
+                } else {
+                    const errorMessage = data.detail || data.message || 'Unknown error';
+                    validationDiv.innerHTML = '<span style="color: red;">Failed to send OTP: ' + errorMessage + '</span>';
+                }
+            })
+            .catch(error => {
+                clearTimeout(timeoutId); // Clear timeout on error
+                console.error('Fetch error:', error);
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please check if the backend server is running and try again.';
+                    validationDiv.innerHTML = '<span style="color: red;">Timeout Error: Backend server may not be running. Please ensure both servers are started.</span>';
+                } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'Failed to connect to the server. Please make sure both the frontend and backend servers are running.';
+                    validationDiv.innerHTML = '<span style="color: red;">Connection Error: Cannot connect to backend server.</span>';
+                } else {
+                    validationDiv.innerHTML = '<span style="color: red;">Error: ' + errorMessage + '</span>';
+                }
+            })
+            .finally(() => {
+                // Restore button state
+                sendBtn.textContent = originalText;
+                sendBtn.disabled = false;
+            });
+        });
+        
+        // Verify OTP
+        document.getElementById('verifyOtpBtn').addEventListener('click', function() {
+            const email = document.getElementById('email').value;
+            const otp = document.getElementById('otp').value;
+            const validationDiv = document.getElementById('otpValidation');
+            const verifyBtn = document.getElementById('verifyOtpBtn');
+            
+            if (!email) {
+                validationDiv.innerHTML = '<span style="color: red;">Please enter your email address first</span>';
+                return;
+            }
+            
+            if (!otp) {
+                validationDiv.innerHTML = '<span style="color: red;">Please enter the OTP</span>';
+                return;
+            }
+            
+            // Show loading message
+            const originalText = verifyBtn.textContent;
+            verifyBtn.textContent = 'Verifying...';
+            verifyBtn.disabled = true;
+            
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+            
+            // Verify OTP
+            fetch('/otp/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email, otp: otp }),
+                signal: controller.signal // Add timeout signal
+            })
+            .then(response => {
+                clearTimeout(timeoutId); // Clear timeout on response
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.message === 'OTP verified') {
+                    validationDiv.innerHTML = '<span style="color: green;">✓ OTP verified successfully</span>';
+                    verifyBtn.style.backgroundColor = '#28a745';
+                    verifyBtn.textContent = 'Verified';
+                    verifyBtn.disabled = true;
+                } else {
+                    validationDiv.innerHTML = '<span style="color: red;">✗ Invalid OTP. Please try again.</span>';
+                    verifyBtn.style.backgroundColor = '#dc3545';
+                    verifyBtn.textContent = 'Verify';
+                    verifyBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                clearTimeout(timeoutId); // Clear timeout on error
+                console.error('Error:', error);
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please check if the backend server is running and try again.';
+                    validationDiv.innerHTML = '<span style="color: red;">Timeout Error: ' + errorMessage + '</span>';
+                } else {
+                    validationDiv.innerHTML = '<span style="color: red;">Error: ' + errorMessage + '</span>';
+                }
+                verifyBtn.textContent = originalText;
+                verifyBtn.disabled = false;
+            });
+        });
+                
+        // Form submission
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+                    
+            // Get form data
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const otp = document.getElementById('otp').value;
+            
+            // Check if OTP has been verified
+            const verifyBtn = document.getElementById('verifyOtpBtn');
+            if (verifyBtn.textContent !== 'Verified') {
+                alert('Please verify your email OTP first');
+                return;
+            }
+                    
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+            
+            // Login admin
+            fetch('/login?email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                signal: controller.signal
+            })
+            .then(response => {
+                clearTimeout(timeoutId); // Clear timeout on response
+                if (response && response.status === 200) {
+                    return response.json();
+                } else if (response) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.detail || 'Login failed');
+                    });
+                }
+            })
+            .then(data => {
+                if (data && data.token && data.role === 'admin') {
+                    // Store token in localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('role', data.role);
+                            
+                    // Redirect to admin dashboard
+                    window.location.href = '/admin.html';
+                } else if (data) {
+                    alert('Invalid credentials or insufficient privileges');
+                }
+            })
+            .catch(error => {
+                clearTimeout(timeoutId); // Clear timeout on error
+                console.error('Error:', error);
+                alert('Admin login failed: ' + error.message);
+            });
+        });
+    </script>
+</body>
+</html>

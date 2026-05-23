@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTING SYSTEM - Results Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+        
+        input.invalid {
+            border-color: #ea4335;
+        }
+        
+        input.valid {
+            border-color: #34a853;
+        }
+        
+        .error-message {
+            color: #ea4335;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .btn-access {
+            width: 100%;
+            padding: 15px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-access:hover {
+            background: #3367d6;
+        }
+        
+        .btn-access:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .back-link a {
+            color: #4285f4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">VOTING SYSTEM</div>
+        <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Access Election Results</h2>
+        <form id="resultAuthForm">
+            <div class="form-group">
+                <label for="voterId">Voter ID (10 alphanumeric characters)</label>
+                <input type="text" id="voterId" name="voterId" maxlength="10" autocomplete="off" required>
+                <div class="error-message" id="voterIdError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="otherId">Other ID (12 numeric digits)</label>
+                <input type="text" id="otherId" name="otherId" maxlength="12" autocomplete="off" required>
+                <div class="error-message" id="otherIdError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password (8-15 characters with uppercase, lowercase, and special character)</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="dob">Date of Birth</label>
+                <input type="date" id="dob" name="dob" required>
+                <div class="error-message" id="dobError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="calculatedAge">Calculated Age</label>
+                <input type="text" id="calculatedAge" name="calculatedAge" readonly>
+            </div>
+            
+            <button type="submit" class="btn-access" id="accessBtn">Access Results</button>
+        </form>
+        
+        <div class="back-link">
+            <a href="/choose_type.html">Back to Role Selection</a>
+        </div>
+    </div>
+    
+    <script>
+        // Validation functions
+        function validateVoterId(voterId) {
+            // Exactly 10 alphanumeric characters
+            const regex = /^[a-zA-Z0-9]{10}$/;
+            return regex.test(voterId);
+        }
+        
+        function validateOtherId(otherId) {
+            // Exactly 12 numeric digits
+            const regex = /^\d{12}$/;
+            return regex.test(otherId);
+        }
+        
+        function validatePassword(password) {
+            // 8-15 characters with at least one uppercase, one lowercase, and one special character
+            if (password.length < 8 || password.length > 15) {
+                return false;
+            }
+            
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+            
+            return hasUpperCase && hasLowerCase && hasSpecialChar;
+        }
+        
+        function calculateAge(dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+        
+        // Real-time validation
+        document.getElementById('voterId').addEventListener('input', function() {
+            const voterId = this.value;
+            const errorElement = document.getElementById('voterIdError');
+            
+            if (voterId.length === 10) {
+                if (validateVoterId(voterId)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    errorElement.style.display = 'none';
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    errorElement.textContent = 'Voter ID must be exactly 10 alphanumeric characters';
+                    errorElement.style.display = 'block';
+                }
+            } else if (voterId.length > 10) {
+                this.value = voterId.slice(0, 10); // Limit to 10 characters
+            } else {
+                this.classList.remove('valid', 'invalid');
+                errorElement.style.display = 'none';
+            }
+            
+            updateSubmitButton();
+        });
+        
+        document.getElementById('otherId').addEventListener('input', function() {
+            const otherId = this.value;
+            const errorElement = document.getElementById('otherIdError');
+            
+            // Allow only numeric input
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            if (otherId.length === 12) {
+                if (validateOtherId(otherId)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    errorElement.style.display = 'none';
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    errorElement.textContent = 'Other ID must be exactly 12 numeric digits';
+                    errorElement.style.display = 'block';
+                }
+            } else if (otherId.length > 12) {
+                this.value = otherId.slice(0, 12); // Limit to 12 digits
+            } else {
+                this.classList.remove('valid', 'invalid');
+                errorElement.style.display = 'none';
+            }
+            
+            updateSubmitButton();
+        });
+        
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const errorElement = document.getElementById('passwordError');
+            
+            if (password.length >= 8) {
+                if (validatePassword(password)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    errorElement.style.display = 'none';
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    errorElement.textContent = 'Password must be 8-15 characters with at least one uppercase letter, one lowercase letter, and one special character';
+                    errorElement.style.display = 'block';
+                }
+            } else {
+                this.classList.remove('valid', 'invalid');
+                errorElement.style.display = 'none';
+            }
+            
+            updateSubmitButton();
+        });
+        
+        document.getElementById('dob').addEventListener('change', function() {
+            const dob = this.value;
+            const errorElement = document.getElementById('dobError');
+            const ageElement = document.getElementById('calculatedAge');
+            
+            if (dob) {
+                const age = calculateAge(dob);
+                ageElement.value = age + ' years';
+                
+                if (age < 18) {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    errorElement.textContent = 'You must be at least 18 years old';
+                    errorElement.style.display = 'block';
+                } else {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    errorElement.style.display = 'none';
+                }
+            } else {
+                ageElement.value = '';
+                this.classList.remove('valid', 'invalid');
+                errorElement.style.display = 'none';
+            }
+            
+            updateSubmitButton();
+        });
+        
+        function updateSubmitButton() {
+            const voterId = document.getElementById('voterId').value;
+            const otherId = document.getElementById('otherId').value;
+            const password = document.getElementById('password').value;
+            const dob = document.getElementById('dob').value;
+            const accessBtn = document.getElementById('accessBtn');
+            
+            const isVoterIdValid = voterId.length === 10 && validateVoterId(voterId);
+            const isOtherIdValid = otherId.length === 12 && validateOtherId(otherId);
+            const isPasswordValid = password.length >= 8 && validatePassword(password);
+            const isDobValid = dob && calculateAge(dob) >= 18;
+            
+            accessBtn.disabled = !(isVoterIdValid && isOtherIdValid && isPasswordValid && isDobValid);
+        }
+        
+        // Form submission
+        document.getElementById('resultAuthForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const voterId = document.getElementById('voterId').value;
+            const otherId = document.getElementById('otherId').value;
+            const password = document.getElementById('password').value;
+            const dob = document.getElementById('dob').value;
+            
+            // Final validation before submission
+            if (!validateVoterId(voterId)) {
+                alert('Please enter a valid Voter ID (10 alphanumeric characters)');
+                return;
+            }
+            
+            if (!validateOtherId(otherId)) {
+                alert('Please enter a valid Other ID (12 numeric digits)');
+                return;
+            }
+            
+            if (!validatePassword(password)) {
+                alert('Please enter a valid Password (8-15 characters with uppercase, lowercase, and special character)');
+                return;
+            }
+            
+            if (calculateAge(dob) < 18) {
+                alert('You must be at least 18 years old');
+                return;
+            }
+            
+            // Show loading state
+            const accessBtn = document.getElementById('accessBtn');
+            const originalText = accessBtn.textContent;
+            accessBtn.textContent = 'Verifying...';
+            accessBtn.disabled = true;
+            
+            try {
+                // In a real implementation, you would authenticate the user here
+                // For now, we'll just redirect to the results page
+                alert('Authentication successful! Redirecting to results...');
+                window.location.href = '/result.html';
+            } catch (error) {
+                console.error('Authentication error:', error);
+                alert('Authentication failed. Please try again.');
+            } finally {
+                // Restore button state
+                accessBtn.textContent = originalText;
+                accessBtn.disabled = false;
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSubmitButton();
+        });
+    </script>
+</body>
+</html>

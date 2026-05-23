@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final OTP Test</title>
+</head>
+<body>
+    <h1>Final OTP Test</h1>
+    <input type="email" id="email" placeholder="Enter email" value="test@example.com">
+    <button onclick="sendOtpPost()">Send OTP (POST)</button>
+    <button onclick="sendOtpGet()">Send OTP (GET - Should Fail)</button>
+    <div id="result"></div>
+
+    <script>
+        async function sendOtpPost() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('Sending OTP POST request to /otp/send');
+                const response = await fetch('/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p style="color: green;">POST Success: ${JSON.stringify(data)}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">POST Error: ${response.status} - ${JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                console.error('POST Error:', error);
+                resultDiv.innerHTML = `<p style="color: red;">POST Network Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function sendOtpGet() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('Sending OTP GET request to /otp/send');
+                // This should fail with 405 Method Not Allowed
+                const response = await fetch(`/otp/send?email=${encodeURIComponent(email)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('GET Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('GET Response data:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p style="color: green;">GET Success: ${JSON.stringify(data)}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">GET Error: ${response.status} - ${JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                console.error('GET Error:', error);
+                resultDiv.innerHTML = `<p style="color: red;">GET Network Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

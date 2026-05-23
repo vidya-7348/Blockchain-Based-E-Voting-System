@@ -1,0 +1,75 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\Arpana\\Desktop\\voting mainfullmainnn0002\\voting mainfullmainnn (2)\\voting mainfullmainnn\\voting mainfull\\voting main01\\Decentralized-Voting-System-main\\contracts\\Migrations.sol": {
+      "lastModificationDate": 1763282412714,
+      "contentHash": "dd36e527629b08609fe4eab8bf4b33f3",
+      "sourceName": "contracts/Migrations.sol",
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0 <0.9.0"
+      ],
+      "artifacts": [
+        "Migrations"
+      ]
+    },
+    "C:\\Users\\Arpana\\Desktop\\voting mainfullmainnn0002\\voting mainfullmainnn (2)\\voting mainfullmainnn\\voting mainfull\\voting main01\\Decentralized-Voting-System-main\\contracts\\Voting.sol": {
+      "lastModificationDate": 1763282345932,
+      "contentHash": "2d8e50a9bff9c133119e73e48d961e42",
+      "sourceName": "contracts/Voting.sol",
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0 <0.9.0"
+      ],
+      "artifacts": [
+        "Voting"
+      ]
+    }
+  }
+}

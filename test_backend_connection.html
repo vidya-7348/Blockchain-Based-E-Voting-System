@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Connection Test</title>
+</head>
+<body>
+    <h1>Backend Connection Test</h1>
+    <input type="email" id="testEmail" placeholder="Enter your email">
+    <button onclick="testConnection()">Test OTP Send</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const email = document.getElementById('testEmail').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<p style="color: red;">Please enter an email</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Sending OTP...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/otp/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<p style="color: green;">Success! Check console for details.</p>';
+                    console.log('OTP Response:', data);
+                } else {
+                    resultDiv.innerHTML = '<p style="color: red;">Error: ' + data.detail + '</p>';
+                    console.error('OTP Error:', data);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<p style="color: red;">Connection Error: ' + error.message + '</p>';
+                console.error('Connection Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
